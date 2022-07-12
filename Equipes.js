@@ -1,8 +1,10 @@
 import React from "react";
 import {Button, Form, Table, Modal} from "react-bootstrap";
-class Projetos extends React.Component {
+
+class Equipes extends React.Component {
 
     state ={
+            id_equipe:0,
             nome_equipe:'',
             pessoas : [],
             modalAberta: false,
@@ -24,6 +26,20 @@ class Projetos extends React.Component {
         })
     }
 
+    carregaPessoas = (id_equipe) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/"+id_equipe, 
+        { method: 'GET' })
+            .then(resposta => resposta.json())
+            .then(pessoas => {
+                this.setState({
+                    id_equipe: pessoas.id_equipe,
+                    nome_equipe: pessoas.nome_equipe
+                })
+
+                this.abrirModal();
+            })
+    }
+
     cadastraPessoas = (pessoas) => {
         fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/", {
             method: 'POST' ,
@@ -35,6 +51,22 @@ class Projetos extends React.Component {
                     this.buscarPessoas();
                     }else{
                         alert("nao add")
+            }
+        })
+
+    }
+
+    atualizarPesssoas = (pessoas) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/", {
+            method: 'PUT' ,
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify(pessoas)
+        })
+            .then(resposta => {
+                if(resposta.ok){
+                    this.buscarPessoas();
+                    }else{
+                        alert("nao atualiza")
             }
         })
 
@@ -51,14 +83,7 @@ class Projetos extends React.Component {
         })
     }
 
-/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
-atualizaNome = (e) => {
-    this.setState(
-        {
-            nome_equipe: e.target.value
-        }
-    )
-}
+
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=RENDER TABELA=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
     renderTabela(){
         return <Table id="table" striped bordered hover variant="dark">
@@ -76,9 +101,8 @@ atualizaNome = (e) => {
                             <td> {pessoas.id_equipe} </td>
                             <td> {pessoas.nome_equipe} </td>
                             <td>
-                                <Button variant="outline-danger" onClick={() => this.abrirModal(pessoas.id_pessoa)}>Adicionar</Button> 
-                                <Button variant="outline-danger" onClick={() => this.carregaPessoas(pessoas.id_pessoa)}>Atualizar</Button> 
-                                <Button variant="outline-danger" onClick={() => this.deletarPessoas(pessoas.id_pessoa)}>Deletar</Button> 
+                                <Button variant="outline-danger" onClick={() => this.carregaPessoas(pessoas.id_equipe)}>Atualizar</Button> 
+                                <Button variant="outline-danger" onClick={() => this.deletarPessoas(pessoas.id_equipe)}>Deletar</Button> 
                             </td>
                         </tr>
                     )
@@ -90,15 +114,6 @@ atualizaNome = (e) => {
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-FUCOES=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
 
-
-    submit = () => {
-            const pessoas = {
-            nome_equipe : this.state.nome_equipe,
-        }
-
-        this.cadastraPessoas(pessoas);
-        
-    }
 
     fecharModal = () => {
         this.setState(
@@ -117,42 +132,63 @@ atualizaNome = (e) => {
             }
          )
     }
+    /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
+    atualizaNome = (e) => {
+        this.setState(
+            {
+                nome_equipe: e.target.value
+            }
+        )
+    }
+
+
+    submit = () => {
+
+        if(this.state.id_equipe == 0){
+            const pessoas = {
+                nome_equipe : this.state.nome_equipe,
+            }
+        
+            this.cadastraPessoas(pessoas);
+        }else{
+            const pessoas = {
+                id_equipe: this.state.id_equipe,
+                nome_equipe : this.state.nome_equipe,
+            }
+        
+            this.atualizarPesssoas(pessoas);
+            
+        }
+    }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=RENDER PESSOA=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 render(){
     return(
+
+        
+
         <div id="modal">
 
-        <Modal show={this.state.modalAberta} onHide={this.fecharModal}>
-                <Modal.Header closeButton>
-                <Modal.Title>Adicionar uma nova Equipe:</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                     <Form>
-            <Form.Group className="mb-3">
-                <Form.Label>id_equipe</Form.Label>
-                <Form.Control type="text" value={this.state.id_equipe} readOnly={true}/>
+            
+            <Form>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>id equipe</Form.Label>
+                <Form.Control type="text" value={this.state.id_equipe} readOnly={true} />
             </Form.Group>
 
-            <Form.Group className="mb-3">
-                <Form.Label>nome_equipe</Form.Label>
-                <Form.Control type="text" placeholder="nome" value={this.state.nome_equipe} onChange={this.atualizaNome}/>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label>nome equipe</Form.Label>
+                <Form.Control type="text" placeholder="nome da equipe" value={this.state.nome_equipe} onChange={this.atualizaNome}/>
+               
             </Form.Group>
+            <Button variant="primary" type="submit" onClick={this.submit}>
+                Adicionar
+            </Button>
             </Form>
             
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" onClick={this.fecharModal}>
-                    Cancelar
-                </Button>
-                <Button  variant="primary" type="submit" onClick={this.submit} >
-                    Adicionar
-                </Button>
-                </Modal.Footer>
-            </Modal>
-            <div id="divBusca">
-                <input type="text" id="txtBusca" placeholder="Buscar..."/>
+            <div>
+                <input type={"text"} ></input>
             </div>
             
             {this.renderTabela()}
@@ -162,4 +198,4 @@ render(){
  
 }
 
-export default Projetos;
+export default Equipes;
