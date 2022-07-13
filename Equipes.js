@@ -17,6 +17,8 @@ class Equipes extends React.Component {
     componentWillUnmount(){
         
     }
+
+    
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Metodos POST DELETE GET UPDATE-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
     buscarPessoas = () => {
          fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/")
@@ -55,7 +57,6 @@ class Equipes extends React.Component {
         })
 
     }
-
     atualizarPesssoas = (pessoas) => {
         fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/", {
             method: 'PUT' ,
@@ -71,7 +72,23 @@ class Equipes extends React.Component {
         })
 
     }
-   
+/*
+    atualizarPesssoas = (id_equipe) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/" +id_equipe, {
+            method: 'PUT' ,
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify(id_equipe)
+        })
+            .then(resposta => {
+                if(resposta.ok){
+                    this.buscarPessoas();
+                    }else{
+                        alert("nao atualiza")
+            }
+        })
+
+    }
+   */
 
     deletarPessoas = (id_equipe) => {
         fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/equipes/"+id_equipe, 
@@ -152,7 +169,7 @@ class Equipes extends React.Component {
             this.cadastraPessoas(pessoas);
         }else{
             const pessoas = {
-                id_equipe: this.state.id_equipe,
+               id_equipe : this.state.id_equipe,
                 nome_equipe : this.state.nome_equipe,
             }
         
@@ -189,6 +206,7 @@ render(){
             
             <div>
                 <input type={"text"} ></input>
+                <Button variant="primary" onClick={() => this.abrirModal}>Deletar</Button> 
             </div>
             
             {this.renderTabela()}
