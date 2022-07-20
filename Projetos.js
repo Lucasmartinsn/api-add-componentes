@@ -1,41 +1,116 @@
 import React from "react";
 import {Button, Form, Table, Modal} from "react-bootstrap";
+import Spinner from 'react-bootstrap/Spinner'
+import { BsPlusLg } from "react-icons/bs";
+import { AiFillEdit, AiFillDelete } from "react-icons/ai";
+import { BsSearch } from "react-icons/bs";
+import './Projetos.css';
+import './getequipe'
+function FSpinner() {
+    return (
+      <Spinner animation="border" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </Spinner>
+    );
+  }
 class Projetos extends React.Component {
 
     state ={
-            pessoas : [],
-            modalAberta: false,
+        id_projeto:0,
+        nome_projeto:'',
+        equipe_id:parseInt(''),
+        nome_equipe:'',
+        status:'',
+        projetos : [],
+        modalAberta: false,
+        
         }
 
 
     componentDidMount(){
-        this.buscarPessoas();
+        this.buscarprojetos();
     }
     componentWillUnmount(){
         
     }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Metodos POST DELETE GET UPDATE-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-    buscarPessoas = () => {
+    buscarprojetos = () => {
          fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/projetos/")
             .then(resposta => resposta.json())
             .then(dados => {
-                this.setState({ pessoas : dados})
+                this.setState({ projetos : dados})
         })
     }
 
-   
+    cadastraprojetos = (projetos) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/projetos/", {
+            method: 'POST' ,
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify(projetos)
+        })
+            .then(resposta => {
+                if(resposta.ok){
+                    this.buscarprojetos();
+                    }else{
+                        alert("nao add")
+            }
+        })
 
-    deletarPessoas = (id_projeto) => {
+    }
+    carregaprojetos = (id_projetos) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/projetos/"+id_projetos, 
+        { method: 'GET' })
+            .then(resposta => resposta.json())
+            .then(projetos => {
+                this.setState({
+                    id_projeto: projetos.id_projeto,
+                    nome_projeto: projetos.nome_projeto,
+                    nome_equipe: projetos.nome_equipe,
+                })
+                this.abrirModal();
+            })
+    }
+
+    deletarprojetos = (id_projeto) => {
         fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/projetos/"+id_projeto, 
         { method: 'DELETE' })
             .then(resposta => {
                 if(resposta.ok){
-                    this.buscarPessoas();
+                    this.buscarprojetos();
                 }
         })
     }
+    atualizarprojetos = (projetos) => {
+        fetch("https://sistema-aprendizes-brisanet-go.herokuapp.com/projetos/", {
+            method: 'PUT' ,
+            headers: { 'Content-Type':'application/json' },
+            body: JSON.stringify(projetos)
+        })
+            .then(resposta => {
+                if(resposta.ok){
+                    this.buscarprojetos();
+                    }else{
+                        alert("nao atualiza")
+            }
+        })
+
+    }
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
+atualizaNome = (e) => {
+    this.setState(
+        {
+            nome_projeto: e.target.value
+        }
+    )
+}
+atualizaEquipe_id = (e) => {
+    this.setState(
+        {
+            equipe_id: e.target.value
+        }
+    )
+}
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=RENDER TABELA=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
     renderTabela(){
@@ -44,27 +119,21 @@ class Projetos extends React.Component {
                 <tr>
                 <th>id_projeto</th>
                 <th>nome_projeto</th>
-                <th>equipe_id</th>
                 <th>nome_equipe</th>
-                <th>status</th>
-                <th>data_inicio</th>
                 <th>Opcoes</th>
                 </tr>
             </thead>
             <tbody>
                 {
-                    this.state.pessoas.map((pessoas) =>
+                    this.state.projetos.map((projetos) =>
                         <tr>
-                            <td> {pessoas.id_projeto} </td>
-                            <td> {pessoas.nome_projeto} </td>
-                            <td> {pessoas.equipe_id} </td>
-                            <td> {pessoas.nome_equipe} </td>
-                            <td> {pessoas.status} </td>
-                            <td> {pessoas.data_inicio} </td>
-                            <td>
-                                <Button variant="outline-danger" onClick={() => this.abrirModal(pessoas.id_pessoa)}>Adicionar</Button> 
-                                <Button variant="outline-danger" onClick={() => this.carregaPessoas(pessoas.id_pessoa)}>Atualizar</Button> 
-                                <Button variant="outline-danger" onClick={() => this.deletarPessoas(pessoas.id_pessoa)}>Deletar</Button> 
+                            <td> {projetos.id_projeto} </td>
+                            <td> {projetos.nome_projeto} </td>
+                            <td> {projetos.nome_equipe} </td>
+                            <td id="icon">
+                                <AiFillEdit onClick={() => this.carregaprojetos(projetos.id_projeto)}/> 
+                                <AiFillDelete onClick={() => this.deletarprojetos(projetos.id_projeto)}/>
+                                <BsSearch/> 
                             </td>
                         </tr>
                     )
@@ -76,56 +145,27 @@ class Projetos extends React.Component {
 
 /*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-FUCOES=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=*/
 
-    atualizaId = (e) => {
-        this.setState(
-            {
-                id_pessoa: e.target.value
-            }
-        )
+
+submit = () => {
+    if(this.state.id_pessoa == 0){
+        const pessoas = {
+        id_projeto: this.state.id_pessoa,
+        nome_projeto : this.state.nome_pessoa,
+        nome_equipe: this.state.nome_equipe,
     }
-    atualizaNome = (e) => {
-        this.setState(
-            {
-                nome_pessoa: e.target.value
-            }
-        )
-    }
-    atualizaFuncao = (e) => {
-        this.setState(
-            {
-                funcao_pessoa: e.target.value
-            }
-        )
-    }
-    atualizaEquipe = (e) => {
-        this.setState(
-            {
-                equipe_id: e.target.value
-            }
-        )
+    this.cadastraprojetos(pessoas);
+
+    }else{
+        const pessoas = {
+        id_pessoa: this.state.id_pessoa,
+        nome_pessoa : this.state.nome_pessoa,
+        funcao_pessoa: this.state.funcao_pessoa,
+        equipe_id: this.state.equipe_id,
     }
 
-    submit = () => {
-        if(this.state.id_pessoa == 0){
-            const pessoas = {
-            id_pessoa: this.state.id_pessoa,
-            nome_pessoa : this.state.nome_pessoa,
-            funcao_pessoa: this.state.funcao_pessoa,
-            equipe_id: this.state.equipe_id,
-        }
-        this.cadastraPesssoas(pessoas);
-
-        }else{
-            const pessoas = {
-            id_pessoa: this.state.id_pessoa,
-            nome_pessoa : this.state.nome_pessoa,
-            funcao_pessoa: this.state.funcao_pessoa,
-            equipe_id: this.state.equipe_id,
-        }
-
-        this.atualizarPesssoas(pessoas);
-        }
+    this.atualizarprojetos(pessoas);
     }
+}
 
     fecharModal = () => {
         this.setState(
@@ -153,28 +193,18 @@ render(){
 
         <Modal show={this.state.modalAberta} onHide={this.fecharModal}>
                 <Modal.Header closeButton>
-                <Modal.Title>Adicionar uma nova Pessoa:</Modal.Title>
+                <Modal.Title>Adicionar um novo projeto:</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                      <Form>
-            <Form.Group className="mb-3">
-                <Form.Label>id_pessoa</Form.Label>
-                <Form.Control type="text" value={this.state.id_pessoa} readOnly={true}/>
-            </Form.Group>
 
             <Form.Group className="mb-3">
-                <Form.Label>nome_pessoa</Form.Label>
-                <Form.Control type="text" placeholder="nome" value={this.state.nome_pessoa} onChange={this.atualizaNome}/>
+                <Form.Label>nome_projeto</Form.Label>
+                <Form.Control type="text" placeholder="nome" value={this.state.nome_projeto} onChange={this.atualizaNome}/>
             </Form.Group>
-
-            <Form.Group className="mb-3">
-                <Form.Label>funcao_pessoa</Form.Label>
-                <Form.Control type="text" placeholder="funcao" value={this.state.funcao_pessoa} onChange={this.atualizaFuncao}/>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
+             <Form.Group className="mb-3">
                 <Form.Label>equipe_id</Form.Label>
-                <Form.Control type="number" placeholder="equipe" value={this.state.equipe_id} onChange={this.atualizaEquipe}/>
+                 <Form.Control type="number" placeholder="equipe" value={this.state.equipe_id} onChange={this.atualizaEquipe_id}/>
             </Form.Group>
             </Form>
             
@@ -188,8 +218,9 @@ render(){
                 </Button>
                 </Modal.Footer>
             </Modal>
-            <div id="divBusca">
-                <input type="text" id="txtBusca" placeholder="Buscar..."/>
+            
+            <div id="add">
+                <BsPlusLg type="submit" onClick={this.abrirModal}/>
             </div>
             
             {this.renderTabela()}
